@@ -1,4 +1,4 @@
-#This file geocode data from lat long
+#This file separate a column which contains Lat / long data 
 # Spécifier le chemin du fichier
 file_path <- "file.csv"
 
