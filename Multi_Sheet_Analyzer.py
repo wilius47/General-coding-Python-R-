@@ -1,10 +1,10 @@
-# ... (your previous code)
+# This code compare two historical adresses, than try to geocode by compare historical adresse with a recent one 
 import pandas as pd
 from nltk.metrics import edit_distance
 
-Us = pd.read_excel("D:/Users/rabehi/Documents/ACP/Frederic Saly-Giocanty/94/Etablissements classes 1895V3Else_2.xlsx")
+Us = pd.read_excel("Path/file1.xlsx")
 # Load the Guide Excel file with multiple sheets
-guide_file_path = "D:/Users/rabehi/Documents/ACP/Frederic Saly-Giocanty/94/Guide_rues_Val_de_Marne_2011.xlsx"
+guide_file_path = "Path/file2.xlsx"
 guide_excel = pd.ExcelFile(guide_file_path)
 
 
