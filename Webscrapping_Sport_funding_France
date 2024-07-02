@@ -1,19 +1,152 @@
+
+#----
+# Charger les bibliothèques nécessaires
 require(jsonlite)
 require(dplyr)
 
-urls <- c(
-  'https://api-subvention-asso-prod.osc-secnum-fr1.scalingo.io/open-data/subventions/etablissement/40232029500023',
-  'https://api-subvention-asso-prod.osc-secnum-fr1.scalingo.io/open-data/subventions/etablissement/44827436500015',
-  'https://api-subvention-asso-prod.osc-secnum-fr1.scalingo.io/open-data/subventions/etablissement/51112577500011',
-  'https://api-subvention-asso-prod.osc-secnum-fr1.scalingo.io/open-data/subventions/etablissement/49990111400011',
-  'https://api-subvention-asso-prod.osc-secnum-fr1.scalingo.io/open-data/subventions/etablissement/40203621400011',
-  'https://api-subvention-asso-prod.osc-secnum-fr1.scalingo.io/open-data/subventions/etablissement/78109164000024'
+# Définir la plage de SIRET pour la boucle itérative
+start_siret <- 40232029510023
+end_siret <- 40232029502923
+
+# Initialiser la variable pour stocker les données récupérées
+data_out <- NULL
+
+# Boucle itérative pour parcourir les SIRET
+for (siret in seq(start_siret, end_siret)) {
+  # Construire l'URL avec le SIRET actuel
+  url <- paste0('https://api-subvention-asso-prod.osc-secnum-fr1.scalingo.io/open-data/subventions/etablissement/', siret)
+  
+  tryCatch({
+    # Lire les données JSON de l'URL
+    tmp <- jsonlite::fromJSON(url)
+    
+    # Vérifier s'il y a des données de subvention
+    if (length(tmp) > 0) {
+      # Ajouter les données à la sortie
+      data_out <- bind_rows(data_out, tmp)
+    }
+  }, error = function(e) {
+    # Ignorer les erreurs liées à l'absence de subventions ou à l'inexistence de l'association
+    message(paste("Erreur pour le SIRET", siret, ":", e$message))
+  })
+}
+
+# Stocker les données dans un fichier CSV
+write.csv(data_out, "D:/Users/rabehi/Documents/ACP/Pierre-Olaf Schut/subventions.csv", row.names = FALSE)
+#Lire un fichier existant sur ordi
+data_out<- read.csv("D:/Users/rabehi/Documents/ACP/Pierre-Olaf Schut/subventions.csv")
+# Afficher les données récupérées
+print(data_out)
+
+#---------------------Analyser les résultats--------------
+# Charger la bibliothèque nécessaire
+library(tibble)
+
+# (0)Générer des données aléatoires pour une dataframe fictive
+# (0)Charger les bibliothèques nécessaires
+library(tibble)
+library(dplyr)
+library(ggplot2)
+library(leaflet)
+
+
+# (0)Générer des données aléatoires pour une dataframe fictive
+set.seed(123)  # Pour la reproductibilité des résultats
+
+# (0)Liste des villes françaises avec leurs régions et coordonnées (extrait)
+villes_coords <- tibble(
+  ville = c("Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier", "Bordeaux", "Lille"),
+  region = c("Île-de-France", "Provence-Alpes-Côte d'Azur", "Auvergne-Rhône-Alpes", "Occitanie", "Provence-Alpes-Côte d'Azur",
+             "Pays de la Loire", "Grand Est", "Occitanie", "Nouvelle-Aquitaine", "Hauts-de-France"),
+  longitude = c(2.3522, 5.3698, 4.8357, 1.4442, 7.2655, -1.5536, 7.7521, 3.8777, -0.5792, 3.0573),
+  latitude = c(48.8566, 43.2965, 45.7640, 43.6047, 43.7102, 47.2184, 48.5734, 43.6119, 44.8378, 50.6292)
 )
 
-data_out=NULL
-for(i in seq(1,length(urls))){
-  # lire les infos
-  tmp=jsonlite::fromJSON(urls[i])
-  # ajouter à la suite /!\ créera de nouvelles colonnes si nécessaires
-  data_out=bind_rows(data_out,tmp)
+data_out <- tibble(
+  dispositif = sample(c("Subvention A", "Subvention B", "Subvention C"), 30, replace = TRUE),
+  exercice = sample(2010:2020, 30, replace = TRUE),
+  montant_accorde = round(runif(30, min = 1000, max = 10000), 2),
+  objet = sample(c("Projet 1", "Projet 2", "Projet 3"), 30, replace = TRUE),
+  service_instructeur = sample(c("Service X", "Service Y", "Service Z"), 30, replace = TRUE),
+  siret = sample(40232029500023:40232029502923, 30, replace = TRUE),
+  statut = sample(c("Actif", "Inactif"), 30, replace = TRUE),
+  ville = sample(villes_coords$ville, 30, replace = TRUE)
+)
+
+# (0)Joindre les régions et les coordonnées géographiques à data_out
+data_out <- left_join(data_out, villes_coords, by = "ville")
+
+
+# (0)Afficher les premières lignes de la dataframe factice
+print(head(data_out))
+
+
+# (1) Nombre de subventions par dispositif
+subventions_par_dispositif <- data_out %>%
+  group_by(dispositif) %>%
+  summarise(nombre = n())
+
+# (1)Afficher la synthèse
+print(subventions_par_dispositif)
+
+# (1)Plot - Histogramme du nombre de subventions par dispositif
+ggplot(subventions_par_dispositif, aes(x = dispositif, y = nombre)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(title = "Nombre de subventions par dispositif", x = "Dispositif", y = "Nombre de subventions")
+
+
+# (2)Nombre de subventions par an
+subventions_par_an <- data_out %>%
+  group_by(exercice) %>%
+  summarise(nombre = n())
+
+# (2)Afficher la synthèse
+print(subventions_par_an)
+
+# (2)Plot - Courbe du nombre de subventions par an
+ggplot(subventions_par_an, aes(x = exercice, y = nombre)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Nombre de subventions par an", x = "Année", y = "Nombre de subventions")
+# (3)Somme des subventions par région
+subventions_par_region <- data_out %>%
+  group_by(region) %>%
+  summarise(somme_subventions = sum(montant_accorde, na.rm = TRUE))
+write.csv(subventions_par_region, "D:/Users/rabehi/Documents/ACP/Pierre-Olaf Schut/subventions_par_region.csv" )
+# (3)Afficher la synthèse
+print(subventions_par_region)
+
+# (3)Plot - Histogramme de la somme des subventions par région
+ggplot(subventions_par_region, aes(x = reorder(region, somme_subventions), y = somme_subventions)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Somme des subventions par région", x = "Région", y = "Somme des subventions")
+# (4)Créer une carte de densité des subventions
+# Définir une palette de couleurs pour les montants
+pal <- colorNumeric(palette = "Blues", domain = data_out$montant_accorde)
+calc_radius <- function(amount) {
+  amount / 1000  # Diviser par 1000 pour ajuster la taille
 }
+m <- leaflet(data_out) %>%
+  addTiles() %>%
+  addCircleMarkers(
+    lng = ~longitude, 
+    lat = ~latitude, 
+    radius = ~calc_radius(montant_accorde), 
+    color = ~pal(montant_accorde), 
+    fillOpacity = 0.7, 
+    popup = ~paste("Ville: ", ville, "<br>Montant: ", montant_accorde, "€")
+  ) %>%
+  addLegend(
+    "bottomright", 
+    pal = pal, 
+    values = ~montant_accorde, 
+    title = "Montant des subventions (€)",
+    opacity = 1
+  )
+
+# Afficher la carte
+m
