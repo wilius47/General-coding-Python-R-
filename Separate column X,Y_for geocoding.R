@@ -1,5 +1,6 @@
+#This file geocode data from lat long
 # Spécifier le chemin du fichier
-file_path <- "D:/Users/rabehi/Documents/ACP/Corine Maitte/Carto prévilèges/Saint empire/Géolocalisation privilègesV2.csv"
+file_path <- "file.csv"
 
 # Charger les données depuis le fichier CSV
 data <- read.csv2(file_path, header = TRUE)
