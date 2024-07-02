@@ -1,3 +1,4 @@
+#This code tries to geocode from historical adresses (old cities names, city codes, districts...)
 # Charger les bibliothèques nécessaires
 library(rgdal)
 library(rgeos)
@@ -23,7 +24,7 @@ data$address <- mapply(reverse_geocode, data$Lat, data$Long)
 spatial_points <- st_as_sf(data, coords = c("Long", "Lat"), crs = 4326)
 
 # Enregistrer le sf object sous forme de shapefile
-st_write(spatial_points, "D:/Users/rabehi/Documents/ACP/Corine Maitte/Carto prévilèges/Saint empire/St_empire.shp")
+st_write(spatial_points, "Path/file.shp")
 
 
 #Italie_piémont
@@ -41,7 +42,7 @@ library(tidygeocoder)
 library(sf)
 #,"grLiAcS", "grLiAcP"
 # Lire le fichier Excel
-file_path <- "D:/Users/rabehi/Documents/ACP/Corine Maitte/Carto prévilèges/Italie/Piemont/Potable Turin Piémont.xlsx"
+file_path <- "path/file2.xlsx"
 sheet_name <- "Graines"  # Nom de la feuille si nécessaire
 data <- read_excel(file_path, sheet = sheet_name)
 
@@ -59,7 +60,7 @@ data_geocoded <- data %>%
 data_sf <- st_as_sf(data_geocoded, coords = c("long", "lat"), crs = 4326)  # Coordonnées en WGS84
 
 # Sauvegarder en tant que Shapefile
-st_write(data_sf, "D:/Users/rabehi/Documents/ACP/Corine Maitte/Carto prévilèges/Italie/Piemont/Turin_Piémont2.shp")
+st_write(data_sf, "path/file3.shp")
 
 # Vérification du Shapefile
 new_data_sf <- st_read("path/to/save/shapefile.shp")
