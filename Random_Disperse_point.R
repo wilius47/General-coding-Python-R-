@@ -1,8 +1,8 @@
-#installation de la librarie
+#it is a random dispersion of points which was superimposed on the same location
 library(sf)
 #ouvrir le fichier 
-A <- st_read("~/ACP/Frederic Saly-Giocanty/Resultats/Else_By_commune_arrondissement_InseeV2.shp")
-B <- read.csv("~/ACP/Frederic Saly-Giocanty/Données/CSV/Etablissements classes 1895V3Else.csv")
+A <- st_read("path/file_point.shp")
+B <- read.csv("Historical factories.csv")
 # visualiser la table d'attribut
 A
 
